@@ -11,4 +11,7 @@ public interface UserService {
     Optional<User> byId(Long id);
     User save(User user);
     void delete(Long id);
+
+    //Validate by email
+    Optional<User> byEmail(String email);
 }

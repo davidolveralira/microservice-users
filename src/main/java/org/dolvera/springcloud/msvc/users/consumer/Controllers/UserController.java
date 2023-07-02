@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,13 @@ public class UserController {
 
     @PostMapping("/save")
     public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) {
+
+        if (service.byEmail(user.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest()
+                    .body(Collections
+                            .singletonMap("message: ", "there is already a user with that email"));
+        }
+
         if (result.hasErrors()) {
             return validate(result);
         }
@@ -54,6 +62,13 @@ public class UserController {
         Optional<User> o = service.byId(id);
         if (o.isPresent()) {
             User userDB = o.get();
+
+            if (!user.getEmail().equalsIgnoreCase(userDB.getEmail()) && service.byEmail(user.getEmail()).isPresent()) {
+                return ResponseEntity.badRequest()
+                        .body(Collections
+                                .singletonMap("message: ", "there is already a user with that email"));
+            }
+
             userDB.setName(user.getName());
             userDB.setEmail(user.getEmail());
             userDB.setPassword(user.getPassword());
@@ -76,7 +91,7 @@ public class UserController {
     private static ResponseEntity<Map<String, String>> validate(BindingResult result) {
         Map<String, String> errores = new HashMap<>();
         result.getFieldErrors().forEach(err -> {
-            errores.put(err.getField(), "The field:" + err.getField() + " " + err.getDefaultMessage());
+            errores.put(err.getField(), "The field: " + err.getField() + " " + err.getDefaultMessage());
         });
         return ResponseEntity.badRequest().body(errores);
     }
