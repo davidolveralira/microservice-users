@@ -39,7 +39,7 @@ public class UserController {
     @PostMapping("/save")
     public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) {
 
-        if (service.byEmail(user.getEmail()).isPresent()) {
+        if (!user.getEmail().isEmpty() && service.byEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.badRequest()
                     .body(Collections
                             .singletonMap("message: ", "there is already a user with that email"));
@@ -63,7 +63,7 @@ public class UserController {
         if (o.isPresent()) {
             User userDB = o.get();
 
-            if (!user.getEmail().equalsIgnoreCase(userDB.getEmail()) && service.byEmail(user.getEmail()).isPresent()) {
+            if (!user.getEmail().isEmpty() && !user.getEmail().equalsIgnoreCase(userDB.getEmail()) && service.byEmail(user.getEmail()).isPresent()) {
                 return ResponseEntity.badRequest()
                         .body(Collections
                                 .singletonMap("message: ", "there is already a user with that email"));
